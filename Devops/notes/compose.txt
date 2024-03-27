@@ -1,0 +1,73 @@
+sce = service 
+DC = Docker Compose 
+C= Container 
+BD = base de données 
+résx = réseaux 
+C_name = nom du conteneur 
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+INSTALLATION 
+
+(faux!)sudo curl -L "https://github.com/docker/compose/releases/download/<VERSION>/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+(faux!)sudo chmod +x /usr/local/bin/docker-compose
+(faux!)docker-compose --version
+
+sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+docker-compose --version
+
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+. Docker vs Docker Compose: 
+	..compose can run multiple C ( gestion des apps multicontainer grace à YAML file ) 
+	..but only within the same host !!
+
+
+.compose file : 
+	docker-compose.yml
+
+
+. fichier YAML
+	..contient la config de tous les services 
+	..1 service <=> 1 container ( ou un autre sce: BD, web servers ,...) 
+	   ...ex : sce ubuntu, sce redis, sce ngninx, ... 
+
+. Contenu dy Yaml file ( compose ) : 
+	..version 
+	  ...default = v1
+	  ... v1 uses :
+	  -> ne prend pas en compte les volumes externes &  les résx personnalisés
+	 
+	  ... v2 uses :     [ Resolution DNS - C_name ]
+	  -> services 
+	  -> réseaux personnalisés
+	  -> volume externe
+
+	  ... v3 uses :    [ Prise en charge de Docker Swarm ]
+	  -> services avec dependances 
+	  -> mises à l'échelle des services 
+	  -> options de déploiement 
+	  -> je peux deployer dans un environement Docker Swarm 
+
+
+	..services
+	..volumes
+	..networks
+
+
+
+--------------------------------------------------------------------------------
+COMMANDES 
+
+. docker-compose up -d
+  .. pour demarrer tous les C associés aux sces définis dans docker-compose.yaml 
+  .. -d pour en background (detached) 
+
+ 
+. docker-compose down 
+  .. arrete tous les sces de cette app qui sont dans docker-compose.yaml
+
+
+.docker-compose ps 

@@ -1,0 +1,22 @@
+# Utiliser l'image officielle Ubuntu comme image de base
+FROM ubuntu
+RUN apt-get update -y && apt-get install nginx -y
+#WORKDIR /var/www/html
+#COPY index.html .
+VOLUME /var/www/html
+EXPOSE 80
+CMD ["/usr/sbin/nginx", "-g", "daemon off;"]
+//page html simple
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="utf-8">
+        <title>hello !</title>
+    </head>
+    <body>
+    </body>
+</html>
+// build the image
+docker build -t basma .
+//run the image
+docker run -d -p 90:90 basma

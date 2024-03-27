@@ -1,0 +1,66 @@
+# Installation de minikube:
+
+### **Mettre à jour le système**
+
+D’abord, mettez à jours votre systeme et installer les dépendances avec la commande ci-dessous :
+
+```
+linux@Linux:~$ sudo apt update -y
+linux@Linux:~$ sudo apt install -y curl wget apt-transport-https
+```
+
+Maintenant que tout est prêt, télécharger le binaire Minikube avec la commande suivante :
+**`linux@Linux:~$ wget https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+Une fois le binaire est télechargé, copiez le vers le dossier **/usr/local/bin** pour que vous puissiez le lancer sans avoir besoin d’indiquer le chemin absolu :
+**`linux@Linux:~$ sudo cp minikube-linux-amd64 /usr/local/bin/minikube
+
+Rendez le fichier exécutable avec la commande ci-dessous :
+
+```
+linux@Linux:~$sudo chmod +x /usr/local/bin/minikube
+```
+
+Vérifiez la version avec la commande suivante :
+
+```
+linux@Linux:~$minikube version
+Il ne nous reste plus qu’à démarrer MiniKube avec la commande suivante :
+linux@Linux:~$ minikube start --driver=docker 
+Si vous rencontrer un blocage de permission excécuter :
+linux@Linux:~$ sudo usermod -aG docker $USER
+Start your cluster:
+minikube start --nodes=3
+```
+
+**Installer Kubectl :**
+
+C’est avec Kubectl. Kubectl est un outil en ligne de commande qui vous permet de gérer les clusters Kubernetes.
+ Il permet de déployer et gérer les applications et les ressources de cluster, comme les pods, les services et les déploiements.
+
+Télecharger le fichier binaire avec la commande suivante :
+
+```
+linux@Linux:~$curl -LO https://storage.googleapis.com/kubernetes-release/release/`
+curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl
+```
+
+Comme ce qu’on a fait avec Minikube, déplacez le fichier vers le dossier **/usr/local/bin/** et rendez-le exécutable :
+
+```
+linux@Linux:~$sudo mv kubectl /usr/local/bin/linux@Linux:~$chmod +x kubectl
+```
+
+Vérifiez la version de kubectl :
+
+```
+linux@Linux:~$ kubectl version -o yaml
+```
+
+Maintenant vous pouvez intéragir avec cluster kubernet. Vous pouvez par exemple afficher les infos du cluster :
+
+```
+linux@Linux:~$kubectl cluster-info
+```
+
+Ainsi que le status des nodes:
+linux@Linux:~$ kubectl get nodes

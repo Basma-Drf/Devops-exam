@@ -1,0 +1,220 @@
+Creating pods imperative way:
+
+       kubectl run test --image nginx --port 80 //replace test with the name of the pod chosen
+//to know the ip address of the pod execute:
+       kubectl describe pod test   //Displays extended info
+       minikube ssh //to open the shell and execute:
+       curl ipaddress  //to get access to the pod 
+       exit
+//Replace nginx with the image chosen and yo with the pod 
+//dry-run n'exécute pas la commande mais montrera les modifications que la commande
+//apporterait au cluster
+       kubectl run yo --image nginx --dry-run=client
+//affiche le résultat de la commande yal.raccourci pour créer un yaml 
+//déclaratif à partir des commanes impératives 
+       kubectl run yo --image nginx --dry-run=client -o yaml
+
+
+Creating pods declarative way:
+       nano test.yaml 
+                        
+//this file is called manifest file 
+//Nginx
+ 
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx
+spec:
+  containers:
+   - name: nginx
+     image: nginx:latest
+     ports:
+      - containerPort: 80
+	name: http
+        protocol: TCP
+     env:
+      - name: MYVAR
+        value: isAwesome
+ 
+//Create the pod based on the manifest file
+
+     kubectl create -f test.yml
+
+//if manifest is changed after deployment and need to re-deploy the pod again
+
+     kubectl apply -f test.yml
+
+//delete pod 
+     
+     kubectl delete pod test.yml
+
+		INTERACTION WITH PODS
+
+//run pod as an interactive shell
+
+      kubectl run -i --tty busybox --image=busybox sh
+// run a temporary interactive container based on the Nginx image 
+
+      kubectl run nginx -it --image=nginx -- bash
+
+//run the nginx pod and generate a YAML manifest file for a Kubernetes pod named nginx,
+// which runs the Nginx image
+
+      kubectl run nginx --image=nginx --dry-run=client -o yaml -- /bin/bash > pod.yaml
+
+//The kubectl attach command allows you to attach to a running container 
+and you can interact with it through your terminal
+     
+      kubectl attach test -i
+//execute the ls / command within the specified pod,
+// printing out the contents of the root directory to your terminal. 
+      kubectl exec my-pod -- ls /
+-------------------------------------------------------------------------------------
+                   NAMESPACES
+//list all the namespaces in the Kubernetes cluster
+      kubectl get namespaces
+//list available objects under a specific namespace (replace kube-system with the namespace chosen)
+      kubectl get all -n kube-system 
+//list available objects under all namespaces
+      kubectl get all --all-namespaces
+//create a namespace for dev
+      kubectl create ns dev
+//deploy objects in a namespace
+      kubectl run nginx --image=nginx -n dev
+//get the pod
+      kubectl get pod/nginx -n dev
+//delete a namespace 
+      kubectl delete ns dev
+-----------------------------------------------------------------------------------
+                   LABELS & SELECTORS
+//list all the pods with their labels
+      kubectl get pods --show-labels
+//adds the label environment=dev to the pod named nginx
+      kubectl label pod nginx environment=dev
+
+//Les selectors permettent de filtrer les objets en fonction des labels
+      kubectl get pods -l environment=dev 
+//This command will list all pods that have both the environment=dev and tier=backend labels.
+      kubectl get pods -l environment=dev,tier=backend
+
+
+
+
+
+
+------------------------------------------------------------------------------------
+                     REPLICASET
+//ReplicaSets are higher-level APIs that allow you to easily run multiple 
+//instances of a pod.
+//Create the replicaSet Manifest file
+
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: my-replicaset
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: my-app
+  template:
+    metadata:
+      labels:
+        app: my-app
+    spec:
+      containers:
+      - name: my-container
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+//create the pod and its replicaSet
+      kubectl create -f replica-set.yml
+//list ReplicaSets in the Kubernetes cluster
+      kubectl get rs -o wide
+//edit a replicaset
+      kubectl edit replicaset my-replicaset
+//delete replicaSets
+      kubectl delete replicaset my-replicaset
+      kubectl delete --f replica-set.yml
+//replace the pods with updated definition
+      kubectl replace -f replica-set.yml
+//scale using definition file
+      kubectl scale --replicas=9 -f replica-set.yml
+//scale using name of replicaset
+      kubectl scale --replicas=3 replicaset my-replicaset
+--------------------------------------------------------------------------------------------------------
+      		DEPLOYMENT
+//They provide a higher level of abstraction that simplifies 
+//application management while offering advanced features for deployment, scaling, and updating.
+
+//Create a deployment file
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx
+spec:
+  replicas: 10
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx-container
+        image: nginx
+        ports:
+        - containerPort: 80
+//create a deployment based on the yaml file
+      kubectl create -f deployment.yml
+//list deployments to get the name of the deployment
+      kubectl get deployments
+//describe deployment with the deployment name
+      kubectl describe deployment nginx-deployment
+//TO get more infos about the pods
+      kubectl get pods -o wide
+//Perform live edit of deployment with the deployment name
+      kubectl edit deployment nginx-deployment
+//scale deployment
+      kubectl scale deployment nginx-deployment --replicas=2
+//redeploy a modified yaml file 
+      kubectl apply -f deployment.yml
+//watch the status of the deployment till the end with the deployment name
+      kubectl rollout status deployment nginx-deployment
+//list the previous configurations and deployments
+      kubectl rollout history deployment nginx-deployment
+//Go back to a previous deployment
+      kubectl rollout undo deployment nginx-deployment
+//rollback the Deployment to a specific revision, in this case, revision 1.
+      kubectl rollout undo deployment nginx-deployment --to-revision=1
+//pause the rollout of updates for a specific Deployment 
+      kubectl rollout pause deployment nginx-deployment
+//resume it
+      kubectl rollout resume deployment nginx-deployment
+//delete deployment and dependencies associated with it
+      kubectl delete -f deployment.yml
+//delete pods replicasets, deployments and services in current namespace
+      kubectl delete all --all
+             LOGS
+**"logs" refer to the output generated by the containers running within the pod.
+**Containers typically write logs to stdout and stderr streams, which Kubernetes 
+**captures and stores. These logs can provide valuable information for debugging,
+**monitoring, and troubleshooting applications running in Kubernetes clusters.
+//dump pod logs
+      kubectl logs nginx
+//dump pod logs with label name=myLabel
+      kubectl logs -l environment=dev
+//check the course for the other log comands page:43
+---------------------------------------------------------------------------------
+  		DAEMONSET
+DaemonSets are designed to ensure that a particular pod
+is present on every worker node or on nodes that meet specific criteria.
+
+
+-------------------------------------------------------------------------------------
+                  SCHEDULING

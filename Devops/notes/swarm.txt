@@ -1,0 +1,190 @@
+C= container 
+P= processus 
+sce=service
+app= application 
+dyn = dynamique 
+ress = ressources 
+ens = ensemble
++ieurs = plusieurs 
+pv = privé 
+
+
+
+------------------------------------------------------------------------------
+
+WHY SWARM ? 
+
+. 1C/sce n'est pas suffisant (psk trafic app est croissant 
+. C s'arrête si: 
+  .. le P qu'il contient se termine 
+  .. erreur
+
+=>Swarm = outil d'orchestration des C qui peut : 
+	. relancer les C arrêtés
+	. créer new C
+		. si ∃ C défaillant 
+		. pour equilibrer charge 
+	. arrêter noeud pour maintenance, sans prblm ou arreter app 
+	. gérer trafic croissant 
+	. garantir équilibrage de charge 
+	. garantir haute dispo
+	. restaurer anciennes version app 
+
+
+
+- Swarm est intégré à docker 
+- Swarm uses TLS pour communiquer & authentifier noeuds
+
+-------------------------------------------------------------------------------
+
+ORCHESTRATION ?
+- But = Déployer app à grande echelle + rapide + fiable 
+- gérer cycle de vie de C ( dans environement vaste & dyn ) 
+- add/suppr C pour répartir charge de app sur l'infra uniformément 
+- équilibrer charge entre C 
+- haute dispo 
+- accès décentralisé aux apps 
+- mise à l'echelle 
+- màj progressive
+- restauration 
+- déplacer C de host à autre si : 
+	-- host s'arrête 
+	-- manque de ress dans host
+- ... 
+
+----------------------------------------------------------------------------------
+
+HOW ? 
+--> gérer des C dans un Cluster 
+
+.. cluster = ens de mach connectées qui fctionnent ensemble
+.. mach ∈ cluster => mach= noeuds de swarm 
+
+------------------------------------------------------------------------------------
+
+Composants 
+
+*Noeuds
+ - Manager
+    . gère & orchestre le cluster 
+ - Worker 
+    . exécute ordre du manager 
+
+*Scheduler 
+ - planifie les C sur cluster en fct de : règles + filtres 
+
+*Discovery sce 
+ - aide manager to discover new nodes + récupérer les nodes dispo 
+
+*Store 
+ - stocke état cluster
+	( infos sces de cluster, infos sces de swarm, ...) 
+ - = BD clé-val 
+ 
+--------------------------------------------------------------------------------------------------
+
+OVERLAY NETWORK 
+
+- meme host => Bridge 
+- diff host => rés overlay 
+
+- default : rés ingress ( qui est de type overlay ) 
+
+
+...yRés overlay 
+     - s'etend sur tout le cluster swarm 
+     - permet communication entre C sur +ieurs nodes 
+
+----------------------------------------------------------------------------------------
+CONFIG 
+
+1. Config "Swarm Manager"
+	. install Docker CE 
+		sudo apt install docker-ce
+	. docker info |grep Swarm  
+	. docker swarm init --advertise-addr [IP pv de node ]
+	. docker info | grep Swarm 
+	. docker node ls 
+2. Add a worker to swarm manager
+	(voir pdf notion) 
+---------------------------------------------------------------------------------------------------------------------
+( docker swarm join --token SWMTKN-1-07w92yym26e3e25t0r4f9brf8hgj5vaz9u73z0epd3eb3kpgi5-5ban1pmgdh53aoxgf8qpk2ogu 192.168.0.13:2377 )
+
+-----------------------------------------------------------------------------------------------------------------------
+
+
+SERVICE 
+
+- Service = l'img d'un microservice à exécuter dans un environement distribué 
+  (ex: http server, DB, prgrm executable)
+- pour deployer une img d'une app quand on utilise swarm, on cré un service 
+
+- Sce needs : 
+  - img de C 
+  - port où rendre sce dispo en dehors de swarm
+  - rés overlay 
+    (pour que le sce se connecte aux autres sces)
+  - nbre de répliques de l'img à executer dans un swarm 
+
+CONFIG SERVICE 
+
+- Creer sce à 5 replicas : 
+	. docker service create --replicas 5 -p 80:80 --name web nginx 
+
+. docker service ls
+. docker service ps web
+. docker node ps worker1
+. docker service scale Sce_name=val
+	( docker service scale web=10 )
+	( met à l'echelle le sce web à 10 repliques ) 
+. docker service update --image nginx:1.18 web 
+. docker service update --image nginx:1.18 --update-parallelism 2 --update-delay 10s web 
+. docker node update --availability drain Node_name
+. docker node update --availability active Node_name
+. docker service update --force Sce_name
+. docker service update --rollback Sce_name
+. docker service rm Sce_name
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
